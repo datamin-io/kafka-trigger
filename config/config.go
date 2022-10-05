@@ -16,11 +16,13 @@ type config struct {
 }
 
 type kafka struct {
+	Version           string   `default:"3.1.0"`
 	BootstrapServers  []string `split_words:"true" default:"127.0.0.1:9092"`
 	ConsumerGroupName string   `split_words:"true" default:"datamin_kafka_trigger"`
 
 	// example: DTMN_KT_KAFKA_TOPIC_MAPPING="topic_name:workflow_uuid_1,topic_name:workflow_uuid_2"
 	TopicMapping string `split_words:"true"`
+	TLS          tls
 	SASL         sasl
 }
 
@@ -29,6 +31,10 @@ type api struct {
 	BasicAuthPassword string `split_words:"true"`
 	ClientId          string `split_words:"true"`
 	ClientSecret      string `split_words:"true"`
+}
+
+type tls struct {
+	Enable bool `default:"false"`
 }
 
 type sasl struct {

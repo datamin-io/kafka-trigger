@@ -1,8 +1,10 @@
 package command
 
 import (
+	"crypto/tls"
 	"fmt"
 	"kafkatrigger/config"
+	"kafkatrigger/services/kafka/sasl"
 	"kafkatrigger/services/workflows"
 	syslog "log"
 	"strings"
@@ -17,7 +19,7 @@ import (
 
 var runHandler cli.ActionFunc = func(c *cli.Context) error {
 	log.Info("Starting kafka listener...")
-	sarama.Logger = syslog.New(log.StandardLogger().Out, "[Sarama] ", syslog.LstdFlags)
+	sarama.Logger = syslog.New(log.StandardLogger().Out, "[Datamin Kafka trigger] ", syslog.LstdFlags)
 
 	cfg := config.Cfg()
 	apiCfg := cfg.API
@@ -28,6 +30,8 @@ var runHandler cli.ActionFunc = func(c *cli.Context) error {
 		return err
 	}
 
+	replaceGokaConfig()
+
 	apiClient := workflows.NewClient(getBaseUrl(cfg.Env), apiCfg.ClientId, apiCfg.ClientSecret, apiCfg.BasicAuthUsername, apiCfg.BasicAuthPassword)
 
 	var wg sync.WaitGroup
@@ -37,7 +41,10 @@ var runHandler cli.ActionFunc = func(c *cli.Context) error {
 			goka.Input(goka.Stream(topicName), new(codec.Bytes), callDataminApi(apiClient, wfUuids)),
 		)
 
-		p, err := goka.NewProcessor(kafkaCfg.BootstrapServers, g)
+		p, err := goka.NewProcessor(
+			kafkaCfg.BootstrapServers,
+			g,
+		)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -117,6 +124,60 @@ func getBaseUrl(env string) string {
 	}
 
 	panic("unknown environment specified")
+}
+
+func replaceGokaConfig() {
+	kc := config.Cfg().Kafka
+	c := goka.DefaultConfig()
+	c.Version = kafkaVersionFromString(kc.Version)
+
+	c.Net.TLS.Enable = kc.TLS.Enable
+	if c.Net.TLS.Enable {
+		c.Net.TLS.Config = newTlsConfig()
+	}
+
+	c.Net.SASL.Enable = kc.SASL.Enable
+	c.Net.SASL.Mechanism = sarama.SASLMechanism(kc.SASL.Mechanism)
+	c.Net.SASL.Version = kc.SASL.Version
+	c.Net.SASL.Handshake = kc.SASL.Handshake
+	c.Net.SASL.AuthIdentity = kc.SASL.AuthIdentity
+	c.Net.SASL.User = kc.SASL.User
+	c.Net.SASL.Password = kc.SASL.Password
+	c.Net.SASL.SCRAMAuthzID = kc.SASL.SCRAMAuthzID
+
+	if c.Net.SASL.Mechanism == sarama.SASLTypeSCRAMSHA512 {
+		c.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient { return &sasl.XDGSCRAMClient{HashGeneratorFcn: sasl.SHA512} }
+		c.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA512
+	} else if c.Net.SASL.Mechanism == sarama.SASLTypeSCRAMSHA256 {
+		c.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient { return &sasl.XDGSCRAMClient{HashGeneratorFcn: sasl.SHA256} }
+		c.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA256
+	}
+
+	c.Net.SASL.GSSAPI.AuthType = kc.SASL.GSSAPI.AuthType
+	c.Net.SASL.GSSAPI.KeyTabPath = kc.SASL.GSSAPI.KeyTabPath
+	c.Net.SASL.GSSAPI.KerberosConfigPath = kc.SASL.GSSAPI.KerberosConfigPath
+	c.Net.SASL.GSSAPI.ServiceName = kc.SASL.GSSAPI.ServiceName
+	c.Net.SASL.GSSAPI.Username = kc.SASL.GSSAPI.Username
+	c.Net.SASL.GSSAPI.Password = kc.SASL.GSSAPI.Password
+	c.Net.SASL.GSSAPI.Realm = kc.SASL.GSSAPI.Realm
+	c.Net.SASL.GSSAPI.DisablePAFXFAST = kc.SASL.GSSAPI.DisablePAFXFAST
+
+	goka.ReplaceGlobalConfig(c)
+}
+
+func newTlsConfig() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true,
+	}
+}
+
+func kafkaVersionFromString(v string) sarama.KafkaVersion {
+	ver, err := sarama.ParseKafkaVersion(v)
+	if err != nil {
+		panic(err)
+	}
+
+	return ver
 }
 
 var RunCommand = &cli.Command{
