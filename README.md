@@ -15,6 +15,8 @@ Main variables:
 - **DTMN_KT_KAFKA_BOOTSTRAP_SERVERS="127.0.0.1:9092"** — a comma-separated list of Kafka bootstrap servers.
 - **DTMN_KT_KAFKA_TOPIC_MAPPING="topic_1:workflow_uuid_1,topic_1:workflow_uuid_2,topic_2:workflow_uuid_2"** — topic-to-workflow mapping, a comma-separated list of `<topic name>:<workflow uuid>` pairs.
 
+More information about how to obrain your OAuth credentials is in our [documentation](https://docs.datamin.io/datamin-api/oauth-clients)
+
 ## Usage
 1. Create a workflow starting with "External trigger" task.
 2. Configure Kafka-trigger to read from a topic and initiate a workflow run.
