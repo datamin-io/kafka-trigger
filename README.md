@@ -18,7 +18,7 @@ Main variables:
 More information about how to obrain your OAuth credentials is in our [documentation](https://docs.datamin.io/datamin-api/oauth-clients)
 
 ## Usage
-1. Create a workflow starting with "External trigger" task.
+1. Create a workflow starting with [External trigger](https://docs.datamin.io/workflows-and-actions/tasks-ip#external-trigger) task.
 2. Configure Kafka-trigger to read from a topic and initiate a workflow run.
 
 Example:
