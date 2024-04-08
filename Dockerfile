@@ -17,7 +17,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build .
+RUN go build ./cmd/datamin-integration
 
 FROM golang:1.21-alpine AS final
 
