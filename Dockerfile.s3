@@ -35,4 +35,4 @@ WORKDIR /opt/datamin
 
 ENTRYPOINT [ "/opt/datamin/datamin-integration" ]
 
-CMD [ "run-kafka-trigger"]
+CMD [ "run-s3-listener-lambda"]
