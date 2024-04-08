@@ -107,7 +107,7 @@ func new() config {
 	godotenv.Load(".env.local")
 	godotenv.Load()
 	var c config
-	err := envconfig.Process("DTMN_KT", &c)
+	err := envconfig.Process("DTMN", &c)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
