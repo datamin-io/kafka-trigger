@@ -13,6 +13,19 @@ type config struct {
 	Env      string `split_words:"true" default:"production"`
 	API      api
 	Kafka    kafka
+	S3       s3
+}
+
+type api struct {
+	BasicAuthUsername string `split_words:"true"`
+	BasicAuthPassword string `split_words:"true"`
+	ClientId          string `split_words:"true"`
+	ClientSecret      string `split_words:"true"`
+}
+
+type s3 struct {
+	// "<bucket_name>/path/to/directory/*.json:wf_uuid1,wf_uuid2;"
+	Mapping string
 }
 
 type kafka struct {
@@ -24,13 +37,6 @@ type kafka struct {
 	TopicMapping string `split_words:"true"`
 	TLS          tls
 	SASL         sasl
-}
-
-type api struct {
-	BasicAuthUsername string `split_words:"true"`
-	BasicAuthPassword string `split_words:"true"`
-	ClientId          string `split_words:"true"`
-	ClientSecret      string `split_words:"true"`
 }
 
 type tls struct {
@@ -101,7 +107,7 @@ func new() config {
 	godotenv.Load(".env.local")
 	godotenv.Load()
 	var c config
-	err := envconfig.Process("DTMN_KT", &c)
+	err := envconfig.Process("DTMN", &c)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

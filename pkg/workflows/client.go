@@ -3,7 +3,7 @@ package workflows
 import (
 	"encoding/json"
 	"fmt"
-	"kafkatrigger/services/oauth"
+	"integration/pkg/oauth"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
@@ -11,7 +11,7 @@ import (
 )
 
 type Client interface {
-	RunWorkflow(workflowUuid string, payload []byte) (string, error) // returns workflow run UUID
+	RunWorkflow(workflowUuid string, payload any) (string, error) // returns workflow run UUID
 }
 
 type client struct {
@@ -19,7 +19,7 @@ type client struct {
 	oauthClient oauth.Client
 }
 
-func (c *client) RunWorkflow(workflowUuid string, payload []byte) (string, error) {
+func (c *client) RunWorkflow(workflowUuid string, payload any) (string, error) {
 	log.Tracef("Running a pipeline, UUID: %s", workflowUuid)
 	t, err := c.oauthClient.GetToken()
 	if err != nil {

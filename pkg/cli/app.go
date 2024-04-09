@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"kafkatrigger/cli/command"
+	"integration/pkg/cli/command"
 
 	"github.com/urfave/cli/v2"
 )
@@ -9,7 +9,8 @@ import (
 func NewApplication() *cli.App {
 	return &cli.App{
 		Commands: []*cli.Command{
-			command.RunCommand,
+			command.RunKafkaTriggerCommand,
+			command.RunS3ListenerLambdaCommand,
 		},
 	}
 }
