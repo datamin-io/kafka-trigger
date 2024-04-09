@@ -35,12 +35,13 @@ var runS3ListenerLambdaHandler cli.ActionFunc = func(c *cli.Context) error {
 	return nil
 }
 
-func getS3EventHandler(apiClient workflows.Client, mapping map[glob.Glob][]uuid.UUID) func(ctx context.Context, e *events.S3Event) (*string, error) {
+func getS3EventHandler(apiClient workflows.Client, mapping map[string]mappingItem) func(ctx context.Context, e *events.S3Event) (*string, error) {
 	return func(ctx context.Context, e *events.S3Event) (*string, error) {
 		for _, r := range e.Records {
 			fullPath := fmt.Sprintf("%s/%s", r.S3.Bucket.Name, r.S3.Object.Key)
 			var content io.Reader
-			for pattern, wfUuids := range mapping {
+			for _, mi := range mapping {
+				pattern := mi.glob
 				if !pattern.Match(fullPath) {
 					continue
 				}
@@ -70,7 +71,7 @@ func getS3EventHandler(apiClient workflows.Client, mapping map[glob.Glob][]uuid.
 					content = result.Body
 				}
 
-				for _, wfUuid := range wfUuids {
+				for _, wfUuid := range mi.uuids {
 					runUuid, err := apiClient.RunWorkflow(wfUuid.String(), content)
 					if err != nil {
 						log.Error(err)
@@ -86,8 +87,8 @@ func getS3EventHandler(apiClient workflows.Client, mapping map[glob.Glob][]uuid.
 	}
 }
 
-func parseS3Mapping(raw string) (map[glob.Glob][]uuid.UUID, error) {
-	mapping := map[glob.Glob][]uuid.UUID{}
+func parseS3Mapping(raw string) (map[string]mappingItem, error) {
+	mapping := map[string]mappingItem{}
 	parts := strings.Split(raw, ";")
 	for _, pt := range parts {
 		parts2 := strings.Split(pt, ":")
@@ -95,22 +96,33 @@ func parseS3Mapping(raw string) (map[glob.Glob][]uuid.UUID, error) {
 			return nil, fmt.Errorf("wrong mapping format: %s", pt)
 		}
 
-		pattern := glob.MustCompile(parts2[0], '/')
+		pattern := parts2[0]
 		wfIds := strings.Split(parts2[1], ",")
 		if len(wfIds) == 0 {
 			return nil, fmt.Errorf("no workflows specified: %s", pt)
 		}
 
 		if _, ok := mapping[pattern]; !ok {
-			mapping[pattern] = []uuid.UUID{}
+			mapping[pattern] = mappingItem{
+				glob:  glob.MustCompile(pattern, '/'),
+				uuids: []uuid.UUID{},
+			}
+
 		}
 
 		for _, wfIdStr := range wfIds {
-			mapping[pattern] = append(mapping[pattern], uuid.MustParse(wfIdStr))
+			mi := mapping[pattern]
+			mi.uuids = append(mi.uuids, uuid.MustParse(wfIdStr))
+			mapping[pattern] = mi
 		}
 	}
 
 	return mapping, nil
+}
+
+type mappingItem struct {
+	glob  glob.Glob
+	uuids []uuid.UUID
 }
 
 var RunS3ListenerLambdaCommand = &cli.Command{
