@@ -95,7 +95,7 @@ func parseS3Mapping(raw string) (map[glob.Glob][]uuid.UUID, error) {
 			return nil, fmt.Errorf("wrong mapping format: %s", pt)
 		}
 
-		pattern := glob.MustCompile(parts2[0])
+		pattern := glob.MustCompile(parts2[0], '/')
 		wfIds := strings.Split(parts2[1], ",")
 		if len(wfIds) == 0 {
 			return nil, fmt.Errorf("no workflows specified: %s", pt)
