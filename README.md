@@ -1,6 +1,12 @@
 # Kafka trigger
 A CLI application for running Datamin pipelines using Kafka messages as input.
 
+<a href="https://github.com/datamin-io/ylem?tab=Apache-2.0-1-ov-file">![Static Badge](https://img.shields.io/badge/license-Apache%202.0-blue)</a>
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/datamin-io/kafka-trigger?color=blue)
+<a href="https://datamin.io" target="_blank">![Static Badge](https://img.shields.io/badge/website-datamin.io-blue)</a>
+<a href="https://docs.datamin.io" target="_blank">![Static Badge](https://img.shields.io/badge/documentation-docs.datamin.io-blue)</a>
+<a href="https://join.slack.com/t/datamincommunity/shared_invite/zt-2nawzl6h0-qqJ0j7Vx_AEHfnB45xJg2Q" target="_blank">![Static Badge](https://img.shields.io/badge/community-join%20Slack-blue)</a>
+
 ## How it works
 Kafka-trigger acts as an OAuth client for Datamin API. It listens to Kafka topics and calls the [pipeline run endpoint](https://docs.datamin.io/datamin-api/api-endpoints#run-workflow) for each message, passing message body as pipeline input.
 In the pipeline, the input can be received by the task "External trigger". When the workflow is run, this task receives the input data and passes it further to the next task of the pipeline.
