@@ -1,0 +1,21 @@
+services:
+  datamin_kafka_trigger:
+    env_file:
+      - .env.dist
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: datamin_kafka_trigger
+    #networks:
+    #  - datamin_network
+    volumes:
+      - .:/go/src/kafkatrigger
+    working_dir: /go/src/kafkatrigger
+    stdin_open: true
+    tty: true
+
+# uncomment if you want to include the container to the existing network
+#networks:
+#  default:
+#    name: datamin_network
+#    external: true

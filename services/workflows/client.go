@@ -50,7 +50,7 @@ func (c *client) RunWorkflow(workflowUuid string, payload []byte) (string, error
 	log.Trace("Pipeline run initiated successfully")
 
 	result := struct {
-		WorkflowRunUuid string `json:"workflow_run_uuid"`
+		WorkflowRunUuid string `json:"pipeline_run_uuid"`
 	}{}
 
 	err = json.Unmarshal(resp.Body(), &result)

@@ -31,6 +31,7 @@ type api struct {
 	BasicAuthPassword string `split_words:"true"`
 	ClientId          string `split_words:"true"`
 	ClientSecret      string `split_words:"true"`
+	Url               string `split_words:"true" default:"https://api.datamin.io"`
 }
 
 type tls struct {

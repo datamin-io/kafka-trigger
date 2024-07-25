@@ -32,7 +32,12 @@ var runHandler cli.ActionFunc = func(c *cli.Context) error {
 
 	replaceGokaConfig()
 
-	apiClient := workflows.NewClient(getBaseUrl(cfg.Env), apiCfg.ClientId, apiCfg.ClientSecret, apiCfg.BasicAuthUsername, apiCfg.BasicAuthPassword)
+	baseAPIUrl := apiCfg.Url 
+	if baseAPIUrl == "" {
+		baseAPIUrl = getBaseUrlByEnv(cfg.Env)
+	}
+
+	apiClient := workflows.NewClient(baseAPIUrl, apiCfg.ClientId, apiCfg.ClientSecret, apiCfg.BasicAuthUsername, apiCfg.BasicAuthPassword)
 
 	var wg sync.WaitGroup
 	for topicName, wfUuids := range topicMapping {
@@ -70,7 +75,7 @@ var runHandler cli.ActionFunc = func(c *cli.Context) error {
 
 func callDataminApi(apiClient workflows.Client, workflowUuids []string) goka.ProcessCallback {
 	return func(ctx goka.Context, msg interface{}) {
-		log.Debugf("Message received, running the following workflows: %v", workflowUuids)
+		log.Debugf("Message received, running the following pipelines: %v", workflowUuids)
 		defer func() {
 			if r := recover(); r != nil {
 				log.Error("Panic while transmitting a message, recovered and skipped\n", r)
@@ -84,10 +89,10 @@ func callDataminApi(apiClient workflows.Client, workflowUuids []string) goka.Pro
 				return
 			}
 
-			log.Infof("Message key: %s, run UUID: %s", ctx.Key(), runUuid)
+			log.Infof("Message key: %s, pipeline UUID: %s, pipeline run UUID: %s", ctx.Key(), wfUuid, runUuid)
 		}
 
-		log.Debugf("Workflows run successfully. Message key: %s", ctx.Key())
+		log.Debugf("Pipelines run successfully. Message key: %s", ctx.Key())
 	}
 }
 
@@ -115,7 +120,7 @@ func parseTopicMapping(raw string) (map[string][]string, error) {
 	return result, nil
 }
 
-func getBaseUrl(env string) string {
+func getBaseUrlByEnv(env string) string {
 	switch env {
 	case "production":
 		return "https://api.datamin.io"

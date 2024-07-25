@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine AS builder
+FROM golang:1.21-alpine AS builder
 
 ENV CGO_ENABLED=0
 
@@ -19,7 +19,7 @@ COPY . .
 
 RUN go build .
 
-FROM golang:1.17.0-alpine AS final
+FROM golang:1.21.0-alpine AS final
 
 COPY --from=builder /usr/local/bin /usr/local/bin
 

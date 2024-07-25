@@ -16,13 +16,16 @@ In the pipeline, the input can be received by the task "External trigger". When 
 Kafka-trigger is configured with environment variables. 
 Besides the conventional way, the config variables can also be specified in the `.env` or `.env.local` file.
 Main variables:
+- **DTMN_KT_API_URL** - Datamin's API URL. If you use the cloud version of Datamin, it is https://api.datamin.io, othervise add URL of your custom Datamin API instance here.
 - **DTMN_KT_API_CLIENT_ID** — OAuth client ID.
 - **DTMN_KT_API_CLIENT_SECRET** — OAuth client secret.
 - **DTMN_KT_KAFKA_VERSION=3.1.0** — version of the Kafka server.
 - **DTMN_KT_KAFKA_BOOTSTRAP_SERVERS="127.0.0.1:9092"** — a comma-separated list of Kafka bootstrap servers.
 - **DTMN_KT_KAFKA_TOPIC_MAPPING="topic_1:pipeline_uuid_1,topic_1:pipeline_uuid_2,topic_2:pipeline_uuid_2"** — topic-to-pipeline mapping, a comma-separated list of `<topic name>:<pipeline uuid>` pairs.
 
-More information about how to obrain your OAuth credentials is in our [documentation](https://docs.datamin.io/datamin-api/oauth-clients)
+Other possible env variables are in the [.env.dist file](https://github.com/datamin-io/kafka-trigger/blob/main/.env.dist)
+
+More information about how to obtain your OAuth credentials is in our [documentation](https://docs.datamin.io/datamin-api/oauth-clients)
 
 ## Usage
 1. Create a pipeline starting with [External trigger](https://docs.datamin.io/workflows-and-actions/tasks-ip#external-trigger) task.
