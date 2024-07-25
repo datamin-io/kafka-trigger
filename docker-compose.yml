@@ -1,7 +1,7 @@
 services:
   datamin_kafka_trigger:
     env_file:
-      - .env.dist
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
